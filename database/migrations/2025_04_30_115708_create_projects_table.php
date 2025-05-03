@@ -16,6 +16,7 @@ return new class extends Migration
             $table->string('title');
             $table->string('path')->unique();
             $table->timestamp('last_opened_at');
+            $table->json('test_paths')->nullable();
             $table->timestamps();
         });
     }

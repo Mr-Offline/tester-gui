@@ -16,19 +16,17 @@ class Show extends Component
 
     public function showContent(string $file)
     {
-        $path = $this->project->path . '/' . $file;
-
-        if (is_dir($path)) {
+        if (is_dir($file)) {
             return;
         }
 
-        if (!is_file($path)) {
+        if (!is_file($file)) {
             return;
         }
 
         $this->selectedFile = $file;
 
-        $content = file_get_contents($path);
+        $content = file_get_contents($file);
 
         $this->content = $content;
     }
@@ -43,6 +41,29 @@ class Show extends Component
     {
         $files = scandir($this->project->path);
         $files = array_diff($files, ['.', '..']);
+
+        if (!array_search('phpunit.xml', $files)) {
+            return to_route('home');
+        }
+
+        $xml = simplexml_load_file(implode(DIRECTORY_SEPARATOR, [$this->project->path, 'phpunit.xml']));
+
+        $testPaths = array_map(fn($item) => (string)$item, $xml->xpath('//testsuites/testsuite/directory'));
+
+        $this->project->update([
+            'test_paths' => $testPaths,
+        ]);
+
+        // Get all files in the project test directory recursively
+        $files = [];
+        foreach ($testPaths as $testPath) {
+            $iterator = new \RecursiveIteratorIterator(new \RecursiveDirectoryIterator(implode(DIRECTORY_SEPARATOR, [$this->project->path, $testPath])));
+            foreach ($iterator as $file) {
+                if ($file->isFile() && $file->getExtension() === 'php') {
+                    $files[] = $file->getPathname();
+                }
+            }
+        }
 
         $this->files = $files;
     }
