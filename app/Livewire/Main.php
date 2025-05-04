@@ -30,6 +30,10 @@ class Main extends Component
 
     public function render()
     {
-        return view('livewire.main');
+        $projects = Project::limit(10)->get();
+
+        return view('livewire.main')->with([
+            'projects' => $projects
+        ]);
     }
 }
