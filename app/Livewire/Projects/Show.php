@@ -33,33 +33,27 @@ class Show extends Component
                 $command = 'pest';
                 break;
             case 'PHPUnit':
-                $command = 'phpunit';
+                $command = implode(DIRECTORY_SEPARATOR, [
+                    'vendor',
+                    'bin',
+                    'phpunit',
+                ]);
                 break;
             default:
                 return;
         }
 
-        $result = Process::run([$command]);
-        dd($result->output());
+        $result = Process::path(realpath($this->project->path))->run([
+            $command,
+            realpath($file)
+        ]);
 
-        $this->selectedFile = $file;
+        $output = explode("\n", $result->output());
+        $output = array_slice($output, 2);
 
-        $content = file_get_contents($file);
-        $tokens = token_get_all($content);
-        $functions = [];
-        $captureNextString = false;
-        foreach ($tokens as $token) {
-            if (is_array($token) && $token[0] === T_FUNCTION) {
-                $captureNextString = true;
-            } elseif ($captureNextString && is_array($token) && $token[0] === T_STRING) {
-                $functions[] = $token[1];
-                $captureNextString = false;
-            }
-        }
+        $output = implode("\n", $output);
 
-        dd($functions);
-
-        $this->content = $content;
+        $this->content = $output;
     }
 
     public function closeFile()

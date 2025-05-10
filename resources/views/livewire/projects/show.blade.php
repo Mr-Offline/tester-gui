@@ -23,12 +23,8 @@
             </div>
         @endif
         @if($content)
-            <div class="text-sm p-0.5">
-                <pre class="whitespace-pre-wrap">
-                    <code>
-                        {{$content}}
-                    </code>
-                </pre>
+            <div class="text-sm p-0.5 whitespace-pre-line">
+                {{$content}}
             </div>
         @endif
     </div>
